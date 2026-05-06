@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "ctf": "Labs de Hacking",
+    "courses": "Academia",
+    "terminal": "Terminal IA",
+    "leaderboard": "Clasificación",
+    "admin": "Admin"
+  },
+  "dashboard": {
+    "welcome": "Acceso Permitido — {{name}}",
+    "rank": "Rango Global",
+    "pts": "Créditos",
+    "streak": "Racha",
+    "level": "Acreditación"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "dashboard": "仪表板",
+    "ctf": "黑客实验室",
+    "courses": "学院",
+    "terminal": "AI终端",
+    "leaderboard": "排行榜",
+    "admin": "管理"
+  },
+  "dashboard": {
+    "welcome": "访问允许 — {{name}}",
+    "rank": "全球排名",
+    "pts": "积点",
+    "streak": "连续天数",
+    "level": "认定"
+  }
+}

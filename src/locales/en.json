@@ -1,0 +1,17 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "ctf": "Hacking Labs",
+    "courses": "Academy",
+    "terminal": "AI Terminal",
+    "leaderboard": "Leaderboard",
+    "admin": "Admin"
+  },
+  "dashboard": {
+    "welcome": "Access Granted — {{name}}",
+    "rank": "Global Rank",
+    "pts": "Credits",
+    "streak": "Streak",
+    "level": "Accreditation"
+  }
+}

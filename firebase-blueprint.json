@@ -1,0 +1,190 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and statistics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "username": { "type": "string" },
+        "country": { "type": "string" },
+        "language": { "type": "string" },
+        "pts": { "type": "number" },
+        "streak": { "type": "number" },
+        "rank": { "type": "number" },
+        "solvedCTF": { "type": "array", "items": { "type": "string" } },
+        "attempts": { "type": "object" },
+        "isPremium": { "type": "boolean" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "plan": { "type": "string" },
+        "level": { "type": "string", "enum": ["Débutant", "Normal", "Pro", "Expert"] },
+        "examAttempt": { 
+          "type": "object",
+          "properties": {
+            "startedAt": { "type": "string" },
+            "type": { "type": "string" },
+            "status": { "type": "string" }
+          }
+        },
+        "toolsInstalled": { "type": "object" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "username", "pts", "isPremium", "role"]
+    },
+    "Challenge": {
+      "title": "Challenge",
+      "description": "CTF Challenge",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["Facile", "Moyen", "Difficile"] },
+        "points": { "type": "number" },
+        "flagHash": { "type": "string" },
+        "hints": { "type": "array", "items": { "type": "string" } },
+        "image": { "type": "string" },
+        "isPremium": { "type": "boolean" },
+        "langs": { "type": "array", "items": { "type": "string" } },
+        "solves": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "category", "difficulty", "points", "flagHash"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "CTF Submission record",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "challengeId": { "type": "string" },
+        "success": { "type": "boolean" },
+        "flagSubmitted": { "type": "string" },
+        "attempts": { "type": "number" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "country": { "type": "string" }
+      },
+      "required": ["userId", "challengeId", "success", "timestamp"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Learning path or course",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "image": { "type": "string" },
+        "isPremium": { "type": "boolean" },
+        "langs": { "type": "array", "items": { "type": "string" } },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "title"]
+    },
+    "Module": {
+      "title": "Module",
+      "description": "Course module",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "courseId": { "type": "string" },
+        "title": { "type": "string" },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "courseId", "title"]
+    },
+    "Lesson": {
+      "title": "Lesson",
+      "description": "Individual lesson",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "moduleId": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string", "enum": ["pdf", "video", "text", "quiz"] },
+        "content": { "type": "string" },
+        "quiz": { "type": "array" },
+        "isPremium": { "type": "boolean" },
+        "langs": { "type": "array", "items": { "type": "string" } },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "moduleId", "title", "type"]
+    },
+    "Progress": {
+      "title": "Progress",
+      "description": "User progress in lessons",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "lessonId": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "score": { "type": "number" },
+        "timeSpent": { "type": "number" },
+        "lastAccessed": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "lessonId", "completed"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "Exam question for leveling system",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctIndex": { "type": "number" },
+        "domain": { "type": "string" },
+        "difficulty": { "type": "string" }
+      },
+      "required": ["id", "text", "options", "correctIndex", "domain", "difficulty"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "challenges/{challengeId}": {
+      "schema": "Challenge",
+      "description": "CTF challenges"
+    },
+    "submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "User challenge submissions"
+    },
+    "courses/{courseId}": {
+      "schema": "Course",
+      "description": "Courses"
+    },
+    "courses/{courseId}/modules/{moduleId}": {
+      "schema": "Module",
+      "description": "Modules within a course"
+    },
+    "courses/{courseId}/modules/{moduleId}/lessons/{lessonId}": {
+      "schema": "Lesson",
+      "description": "Lessons within a module"
+    },
+    "progress/{userId_lessonId}": {
+      "schema": "Progress",
+      "description": "User progress per lesson"
+    },
+    "questions/{questionId}": {
+      "schema": "Question",
+      "description": "Pool of exam questions"
+    },
+    "teams/{teamId}": {
+      "schema": "object",
+      "description": "Global user teams and rankings"
+    },
+    "geoConfig/{countryCode}": {
+      "schema": "object",
+      "description": "Country-specific regulations and payments"
+    },
+    "leaderboard/{uid}": {
+      "schema": "object",
+      "description": "Leaderboard statistics"
+    }
+  }
+}

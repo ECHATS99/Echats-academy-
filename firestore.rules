@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- HELPERS GLOBAUX ---
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(uid) { return isSignedIn() && request.auth.uid == uid; }
+    function isAdmin() { 
+      return isSignedIn() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // --- COLLECTION USERS ---
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && 
+        incoming().keys().hasAll(['uid', 'email', 'username', 'pts', 'role', 'isPremium']) &&
+        (incoming().role == 'user' || incoming().email == 'eliothm071@gmail.com') &&
+        incoming().pts == 0;
+      allow update: if isOwner(userId) && (
+        // L'utilisateur peut mettre à jour ses statistiques avec validation
+        incoming().pts is number && 
+        incoming().pts >= existing().pts &&
+        // On interdit de changer son niveau manuellement (sauf via réussite examen)
+        // Mais pour simplifier ici on autorise tant que l'examen est valide
+        (incoming().level == existing().level || incoming().examAttempt.status == 'passed') &&
+        !incoming().diff(existing()).affectedKeys().hasAny(['role', 'isPremium', 'isAdmin', 'email', 'uid'])
+      ) || isAdmin();
+    }
+
+    // --- COLLECTION QUESTIONS ---
+    match /questions/{questionId} {
+      allow read: if isSignedIn(); // Tout le monde peut lire pour l'examen
+      allow write: if isAdmin();
+    }
+
+    // --- COLLECTION LEADERBOARD ---
+    match /leaderboard/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid) && incoming().pts == 0;
+      allow update: if isOwner(uid) && (
+        incoming().pts is number &&
+        incoming().pts >= existing().pts &&
+        !incoming().diff(existing()).affectedKeys().hasAny(['uid', 'username'])
+      ) || isAdmin();
+    }
+
+    // --- COLLECTION CHALLENGES ---
+    match /challenges/{challengeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- COLLECTION SUBMISSIONS ---
+    match /submissions/{submissionId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // --- COLLECTION COURSES & PROGRESS ---
+    match /courses/{courseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+      
+      match /modules/{moduleId} {
+        allow read: if true;
+        allow write: if isAdmin();
+        
+        match /lessons/{lessonId} {
+          allow read: if true;
+          allow write: if isAdmin();
+        }
+      }
+    }
+
+    match /progress/{progressId} {
+      allow read, write: if isSignedIn() && (
+        // L'ID du document est souvent userId_lessonId
+        progressId.startsWith(request.auth.uid) || resource.data.userId == request.auth.uid
+      );
+    }
+
+    // --- AUTRES COLLECTIONS ---
+    match /announcements/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /pendingPayments/{id} {
+      allow create: if isSignedIn() && incoming().uid == request.auth.uid;
+      allow read: if isOwner(resource.data.uid) || isAdmin();
+    }
+    
+    // Défaut : Interdire tout le reste
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
